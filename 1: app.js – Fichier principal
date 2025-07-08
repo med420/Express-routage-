@@ -1,0 +1,45 @@
+const express = require("express");
+const app = express();
+const path = require("path");
+
+// Moteur de template EJS
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+// Fichiers CSS statiques
+app.use(express.static(path.join(__dirname, "public")));
+
+// Middleware personnalisé : vérifier jour et heure
+app.use((req, res, next) => {
+  const now = new Date();
+  const jour = now.getDay(); // 0 = dimanche, 1 = lundi, ..., 6 = samedi
+  const heure = now.getHours();
+
+  const estJourOuvrable = jour >= 1 && jour <= 5;
+  const estHeureTravail = heure >= 9 && heure < 17;
+
+  if (estJourOuvrable && estHeureTravail) {
+    next();
+  } else {
+    res.send("<h2>⚠️ L'application est disponible uniquement du lundi au vendredi, de 9h à 17h.</h2>");
+  }
+});
+
+// Routes
+app.get("/", (req, res) => {
+  res.render("index");
+});
+
+app.get("/services", (req, res) => {
+  res.render("services");
+});
+
+app.get("/contact", (req, res) => {
+  res.render("contact");
+});
+
+// Démarrage du serveur
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
+});
